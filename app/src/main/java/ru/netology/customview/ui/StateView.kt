@@ -110,7 +110,7 @@ class StateView @JvmOverloads constructor(
         }
 
         dotPaint.color = colors[0]
-        canvas.drawCircle(center.x, center.y - radius, lineWeight.toFloat() / 2, dotPaint)
+        canvas.drawCircle(center.x + 1F, center.y - radius, lineWeight.toFloat() / 2, dotPaint)
 
         canvas.drawText(
             "%.2f%%".format(data.sum() / maxValue * 100),
