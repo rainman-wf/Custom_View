@@ -12,7 +12,9 @@ import android.view.animation.LinearInterpolator
 import androidx.core.content.withStyledAttributes
 import ru.netology.customview.R
 import ru.netology.customview.utils.db
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
 import kotlin.random.Random
 
 class StateView @JvmOverloads constructor(
@@ -96,30 +98,35 @@ class StateView @JvmOverloads constructor(
         )
     }
 
-
     override fun onDraw(canvas: Canvas) {
         if (data.isEmpty()) return
 
-        var startFrom = 0f
+        var startFrom = -90f
 
         data.forEachIndexed { index, datum ->
 
             val angle = datum * 360 / maxValue
-            
+
             paint.color =
                 if (hasEmpty && index == data.lastIndex) emptyColor
                 else colors.getOrElse(index) { generateRandomColor() }
 
-            canvas.drawArc(oval, startFrom + progress, angle * (progress + 90) / 360, false, paint)
+            canvas.drawArc(oval, startFrom + progress, angle * progress / 360, false, paint)
 
             canvas.drawText(
-                "%.2f%%".format((data.sum() - emptyValue) / maxValue * 100 * (progress + 90) / 360),
-                center.x, center.y + textPaint.textSize / 4, textPaint)
+                "%.2f%%".format((data.sum() - emptyValue) / maxValue * 100 * (progress) / 360),
+                center.x, center.y + textPaint.textSize / 4, textPaint
+            )
 
             startFrom += angle
         }
 
-        if (progress == 270f) canvas.drawCircle(center.x + 1, center.y - radius, lineWeight.toFloat() / 2, dotPaint)
+        canvas.drawCircle(
+            center.x - sin(-progress /  180 * Math.PI).toFloat() * radius + 1,
+            center.y - cos(-progress /  180 * Math.PI).toFloat() * radius,
+            lineWeight.toFloat() / 2,
+            dotPaint
+        )
 
     }
 
@@ -131,13 +138,13 @@ class StateView @JvmOverloads constructor(
             it.removeAllUpdateListeners()
             it.cancel()
         }
-        progress = -90F
-        valueAnimator = ValueAnimator.ofFloat(-90f, 270f).apply {
+        progress = 0F
+        valueAnimator = ValueAnimator.ofFloat(0f, 360f).apply {
             addUpdateListener {
                 progress = it.animatedValue as Float
                 invalidate()
             }
-            duration = 2000
+            duration = 3600
             interpolator = LinearInterpolator()
             start()
         }
