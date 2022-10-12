@@ -10,14 +10,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val stateView = findViewById<StateView>(R.id.stateView)
 
-        stateView.maxValue = 3000F
+        stateView.maxValue = 2000F
 
-        stateView.data = listOf(
-            500F,
-            500F,
-            500F,
-            500F
+        stateView.postDelayed(
+            {
+                stateView.data = listOf(
+                    500F,
+                    500F,
+                    500F,
+                    300F
+                )
+            }, 2000
         )
-
     }
 }

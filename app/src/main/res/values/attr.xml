@@ -8,5 +8,11 @@
         <attr name="color3" format="color|reference"/>
         <attr name="color4" format="color|reference"/>
         <attr name="emptyColor" format="color|reference"/>
+        <attr name="myAnimationMode" format="enum">
+            <enum name="none" value="0"/>
+            <enum name="static_" value="1"/>
+            <enum name="rotation" value="2"/>
+            <enum name="bidirectional" value="3"/>
+        </attr>
     </declare-styleable>
 </resources>
