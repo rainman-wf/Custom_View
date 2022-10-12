@@ -32,6 +32,7 @@ class StateView @JvmOverloads constructor(
     private var valueAnimator: ValueAnimator? = null
     private var hasEmpty: Boolean = false
     private var emptyValue: Float = 0f
+    private var animationMode: AnimationMode = AnimationMode.NONE
     var maxValue: Float = 0f
 
     init {
@@ -45,6 +46,8 @@ class StateView @JvmOverloads constructor(
                 getColor(R.styleable.StateView_color3, generateRandomColor()),
                 getColor(R.styleable.StateView_color4, generateRandomColor())
             )
+            animationMode =
+                AnimationMode.values()[getInteger(R.styleable.StateView_myAnimationMode, 0)]
         }
     }
 
@@ -99,6 +102,7 @@ class StateView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
+
         if (data.isEmpty()) return
 
         var startFrom = -90f
@@ -111,7 +115,27 @@ class StateView @JvmOverloads constructor(
                 if (hasEmpty && index == data.lastIndex) emptyColor
                 else colors.getOrElse(index) { generateRandomColor() }
 
-            canvas.drawArc(oval, startFrom + progress, angle * progress / 360, false, paint)
+            // rotation
+            // val startAngle = startFrom + progress
+            // bidirectional
+
+
+            val startAngle =
+                when (animationMode) {
+                    AnimationMode.NONE, AnimationMode.STATIC -> startFrom
+                    AnimationMode.ROTATION -> progress
+                    AnimationMode.BIDIRECTIONAL ->
+                        startFrom + angle / 2 - progress / (360 * 2 / angle)
+                }
+
+            val sweepAngle =
+                when (animationMode) {
+                    AnimationMode.NONE -> angle
+                    AnimationMode.STATIC, AnimationMode.ROTATION, AnimationMode.BIDIRECTIONAL ->
+                        angle * progress / 360
+                }
+
+            canvas.drawArc(oval, startAngle, sweepAngle, false, paint)
 
             canvas.drawText(
                 "%.2f%%".format((data.sum() - emptyValue) / maxValue * 100 * (progress) / 360),
@@ -121,12 +145,25 @@ class StateView @JvmOverloads constructor(
             startFrom += angle
         }
 
-        canvas.drawCircle(
-            center.x - sin(-progress /  180 * Math.PI).toFloat() * radius + 1,
-            center.y - cos(-progress /  180 * Math.PI).toFloat() * radius,
-            lineWeight.toFloat() / 2,
-            dotPaint
-        )
+        val dotProgress = (data[0] / maxValue) * (progress / maxValue - 180)
+
+        val dotX = when (animationMode) {
+            AnimationMode.STATIC, AnimationMode.NONE -> center.x + 1
+            AnimationMode.ROTATION ->
+                center.x - sin(-progress / 180 * Math.PI).toFloat() * radius + 1
+            AnimationMode.BIDIRECTIONAL ->
+                center.x - sin(dotProgress / 180 * Math.PI).toFloat() * radius + 1
+        }
+
+        val dotY = when (animationMode) {
+            AnimationMode.STATIC, AnimationMode.NONE -> center.y - radius
+            AnimationMode.ROTATION ->
+                center.y - cos(progress / 180 * Math.PI).toFloat() * radius
+            AnimationMode.BIDIRECTIONAL ->
+                center.y - cos(dotProgress / 180 * Math.PI).toFloat() * radius
+        }
+
+        canvas.drawCircle(dotX, dotY, lineWeight.toFloat() / 2, dotPaint)
 
     }
 
@@ -148,5 +185,12 @@ class StateView @JvmOverloads constructor(
             interpolator = LinearInterpolator()
             start()
         }
+    }
+
+    enum class AnimationMode {
+        NONE,
+        STATIC,
+        ROTATION,
+        BIDIRECTIONAL
     }
 }
