@@ -145,7 +145,7 @@ class StateView @JvmOverloads constructor(
             startFrom += angle
         }
 
-        val dotProgress = (data[0] / maxValue) * (progress / maxValue - 180)
+        val dotProgress = progress * data[0] / maxValue / 2 - 180 * data[0] / maxValue
 
         val dotX = when (animationMode) {
             AnimationMode.STATIC, AnimationMode.NONE -> center.x + 1
